@@ -19,21 +19,29 @@ function App(){
     const [title, setTitle] = useState("");
     const [content, setContent] = useState("");
     const [tasks, setTasks] = useState([]);
+    const [taskId, setTaskId] = useState(0);
 
     function submitForm(e){
         e.preventDefault();
-        setTasks((prev) => [...prev, {title, content}]);       
+        setTasks((prev) => [...prev, {taskId, title, content}]);       
+        setTaskId(prevId => prevId + 1);
         setTitle("");
         setContent("");
     }
 
+    function handleDelete(key){
+        const newTasks = tasks.filter(task => task.taskId !== key);
+        setTasks(newTasks);
+    }
+
     const task = tasks.length > 0 ? (
     <ol>
-        {tasks.map((arr)=>{
-            const summary = arr.title + ", " + arr.content; 
+        {tasks.map((task)=>{
+            const summary = task.title + ", " + task.content; 
             return (
-                    <li>
+                    <li key={task.taskId}>
                         <p>{summary}</p>
+                        <button onClick={()=>handleDelete(task.taskId)}>Delete</button>
                     </li>
             );
         })}

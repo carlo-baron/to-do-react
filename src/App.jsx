@@ -5,14 +5,12 @@ function Form({title,
                content,
                setTitle, 
                setContent, 
-               editKey,
                onSubmit, 
                submitMode
               }){
     return (
         <>
             <form onSubmit={onSubmit}> 
-                <input type="number" value={editKey} hidden/>
                 <label htmlFor="title">Title: </label>
                 <input type="text"
                        name="title"
@@ -80,10 +78,10 @@ function App(){
         setCurrentMode(HeaderModes.Edit);
         setSubmitMode(SubmitModes.Edit);
 
-        const task = tasks.filter(task => task.taskId === key);
+        const task = tasks.find(task => task.taskId === key);
         setEditKey(key);
-        setTitle(task[0].title);
-        setContent(task[0].content);
+        setTitle(task.title);
+        setContent(task.content);
     }
 
     function handleDelete(key){

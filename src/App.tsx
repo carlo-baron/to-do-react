@@ -1,5 +1,22 @@
 import { useState } from 'react'
+
 import './App.css'
+
+type FormProps = {
+    title: string;
+    content: string;
+    setTitle: (val: string)=> void;
+    setContent: (val: string)=> void;
+    editKey: number;
+    onSubmit: (e: React.FormEvent<HTMLFormElement>)=> void;
+    submitMode: string;
+};
+
+type Task = {
+    taskId: number;
+    title: string;
+    content: string;
+}
 
 function Form({title, 
                content,
@@ -7,7 +24,7 @@ function Form({title,
                setContent, 
                onSubmit, 
                submitMode
-              }){
+              }: FormProps): React.ReactElement{
     return (
         <>
             <form onSubmit={onSubmit}> 
@@ -31,33 +48,33 @@ function Form({title,
 const HeaderModes = {
     Normal: 'Add Task',
     Edit: 'Edit Task'
-};
+} as const;
 
 const SubmitModes = {
     Normal: "Submit",
     Edit: "Edit" 
-}
+} as const;
 
-function Mode({mode}){
+function Mode({mode}: {mode: string}): React.ReactElement{
     return (
         <h2>{mode}</h2>
     );
 }
 
-function App(){
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [tasks, setTasks] = useState([]);
-    const [taskId, setTaskId] = useState(1);
-    const [currentMode, setCurrentMode] = useState(HeaderModes.Normal);
-    const [submitMode, setSubmitMode] = useState(SubmitModes.Normal);
-    const [editKey, setEditKey] = useState(0);
+function App(): React.ReactElement{
+    const [title, setTitle] = useState<string>("");
+    const [content, setContent] = useState<string>("");
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [taskId, setTaskId] = useState<number>(1);
+    const [currentMode, setCurrentMode] = useState<string>(HeaderModes.Normal);
+    const [submitMode, setSubmitMode] = useState<string>(SubmitModes.Normal);
+    const [editKey, setEditKey] = useState<number>(0);
 
-    function submitForm(e){
+    function submitForm(e: React.FormEvent<HTMLFormElement>): void{
         e.preventDefault();
 
         if(editKey !== 0){
-            const taskIndex = tasks.findIndex(task => task.taskId === editKey); 
+            const taskIndex: number = tasks.findIndex(task => task.taskId === editKey); 
             const newTasks = [...tasks];
             newTasks[taskIndex].title = title;
             newTasks[taskIndex].content = content;
@@ -74,17 +91,18 @@ function App(){
         setEditKey(0);
     }
 
-    function editTask(key){
+    function editTask(key: number): void{
         setCurrentMode(HeaderModes.Edit);
         setSubmitMode(SubmitModes.Edit);
 
         const task = tasks.find(task => task.taskId === key);
+        if(!task) return;
         setEditKey(key);
         setTitle(task.title);
         setContent(task.content);
     }
 
-    function handleDelete(key){
+    function handleDelete(key: number): void{
         const newTasks = tasks.filter(task => task.taskId !== key);
         setTasks(newTasks);
     }

@@ -1,6 +1,8 @@
-import { useState } from 'react'
-
+import { useState } from 'react';
+import { useEffect } from 'react';
 import './App.css'
+
+const server: string = "http://localhost:5000";
 
 type FormProps = {
     title: string;
@@ -13,7 +15,7 @@ type FormProps = {
 };
 
 type Task = {
-    taskId: number;
+    _id: number;
     title: string;
     content: string;
 }
@@ -65,23 +67,40 @@ function App(): React.ReactElement{
     const [title, setTitle] = useState<string>("");
     const [content, setContent] = useState<string>("");
     const [tasks, setTasks] = useState<Task[]>([]);
-    const [taskId, setTaskId] = useState<number>(1);
     const [currentMode, setCurrentMode] = useState<string>(HeaderModes.Normal);
     const [submitMode, setSubmitMode] = useState<string>(SubmitModes.Normal);
     const [editKey, setEditKey] = useState<number>(0);
+
+    useEffect(() => {
+        fetch(`${server}/api/tasks`)
+            .then(res => res.json())
+            .then(data => setTasks(data))
+            .catch(err => console.error(err));
+    }, []);
 
     function submitForm(e: React.FormEvent<HTMLFormElement>): void{
         e.preventDefault();
 
         if(editKey !== 0){
-            const taskIndex: number = tasks.findIndex(task => task.taskId === editKey); 
-            const newTasks = [...tasks];
-            newTasks[taskIndex].title = title;
-            newTasks[taskIndex].content = content;
-            setTasks(newTasks);
+            fetch(`${server}/api/tasks/${editKey}`,{
+                method: "PUT",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title, content})
+            })
+            .then(res => res.json())
+            .then(updatedTask => {
+                setTasks(prev => prev.map(task => task._id === updatedTask._id ? updatedTask : task));
+            });
         }else{
-            setTasks((prev) => [...prev, {taskId, title, content}]);       
-            setTaskId(prevId => prevId + 1);
+            fetch(`${server}/api/tasks`,{
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({title, content})
+            })
+            .then(res => res.json()
+            .then(createdTask => {
+                setTasks((prev) => [...prev, createdTask]);       
+            }));
         }
 
         setCurrentMode(HeaderModes.Normal);
@@ -95,7 +114,7 @@ function App(): React.ReactElement{
         setCurrentMode(HeaderModes.Edit);
         setSubmitMode(SubmitModes.Edit);
 
-        const task = tasks.find(task => task.taskId === key);
+        const task = tasks.find(task => task._id === key);
         if(!task) return;
         setEditKey(key);
         setTitle(task.title);
@@ -103,8 +122,10 @@ function App(): React.ReactElement{
     }
 
     function handleDelete(key: number): void{
-        const newTasks = tasks.filter(task => task.taskId !== key);
-        setTasks(newTasks);
+        fetch(`${server}/api/tasks/${key}`, {
+            method: "DELETE",
+        })
+        .then(() => setTasks(prev => prev.filter(task => task._id !== key)));
     }
 
     const task = tasks.length > 0 ? (
@@ -112,10 +133,10 @@ function App(): React.ReactElement{
         {tasks.map((task)=>{
             const summary = task.title + ", " + task.content; 
             return (
-                <li key={task.taskId}>
+                <li key={task._id}>
                     <p>{summary}</p>
-                    <button onClick={()=>editTask(task.taskId)}>Edit</button>
-                    <button onClick={()=>handleDelete(task.taskId)}>Delete</button>
+                    <button onClick={()=>editTask(task._id)}>Edit</button>
+                    <button onClick={()=>handleDelete(task._id)}>Delete</button>
                 </li>
             );
         })}

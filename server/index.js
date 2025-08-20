@@ -28,7 +28,7 @@ app.get("/api/tasks", async (req, res) => {
 
 app.get("/api/tasks/:id", async (req, res) => {
     try {
-        const { id } = req.params.id;  
+        const id = req.params.id;  
         const task = await Task.findById(id);
         if(!task){
             return res.status(404).json({ error: "Task not Found" });

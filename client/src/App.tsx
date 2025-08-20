@@ -12,6 +12,7 @@ type FormProps = {
     editKey: number;
     onSubmit: (e: React.FormEvent<HTMLFormElement>)=> void;
     submitMode: string;
+    onCancel: () => void;
 };
 
 type Task = {
@@ -25,7 +26,8 @@ function Form({title,
                setTitle, 
                setContent, 
                onSubmit, 
-               submitMode
+               submitMode,
+               onCancel
               }: FormProps): React.ReactElement{
     return (
         <>
@@ -41,6 +43,7 @@ function Form({title,
                        value={content}
                        onChange={(e)=>setContent(e.target.value)}required/>
                 <input type="submit" value={submitMode} />
+                <input type="button" value="Cancel" onClick={onCancel}/>
             </form>
         </>
     );
@@ -103,6 +106,10 @@ function App(): React.ReactElement{
             }));
         }
 
+        resetFormState();
+    }
+
+    function resetFormState(){
         setCurrentMode(HeaderModes.Normal);
         setSubmitMode(SubmitModes.Normal);
         setTitle("");
@@ -131,10 +138,10 @@ function App(): React.ReactElement{
     const task = tasks.length > 0 ? (
     <ol>
         {tasks.map((task)=>{
-            const summary = task.title + ", " + task.content; 
             return (
                 <li key={task._id}>
-                    <p>{summary}</p>
+                    <p>{task.title}</p>
+                    <button onClick={()=>console.log("wow")}>Open</button>
                     <button onClick={()=>editTask(task._id)}>Edit</button>
                     <button onClick={()=>handleDelete(task._id)}>Delete</button>
                 </li>
@@ -156,6 +163,7 @@ function App(): React.ReactElement{
                 editKey={editKey}
                 onSubmit={submitForm}
                 submitMode={submitMode}
+                onCancel={resetFormState}
             />
             {task}
         </>

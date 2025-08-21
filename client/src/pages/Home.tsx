@@ -1,6 +1,6 @@
-import '.././App.css'
+import styles from '../assets/Home.module.css' 
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 const server: string = "http://localhost:5000";
 
@@ -9,7 +9,7 @@ type FormProps = {
     content: string;
     setTitle: (val: string)=> void;
     setContent: (val: string)=> void;
-    editKey: number;
+    editKey: string;
     onSubmit: (e: React.FormEvent<HTMLFormElement>)=> void;
     submitMode: string;
     onCancel: () => void;
@@ -31,7 +31,7 @@ function Form({title,
               }: FormProps): React.ReactElement{
     return (
         <>
-            <form onSubmit={onSubmit}> 
+            <form onSubmit={onSubmit} className={styles.form}> 
                 <label htmlFor="title">Title: </label>
                 <input type="text"
                        name="title"
@@ -62,7 +62,7 @@ const SubmitModes = {
 
 function Mode({mode}: {mode: string}): React.ReactElement{
     return (
-        <h2>{mode}</h2>
+        <h2 className={styles.header}>{mode}</h2>
     );
 }
 
@@ -72,20 +72,30 @@ function Home(): React.ReactElement{
     const [tasks, setTasks] = useState<Task[]>([]);
     const [currentMode, setCurrentMode] = useState<string>(HeaderModes.Normal);
     const [submitMode, setSubmitMode] = useState<string>(SubmitModes.Normal);
-    const [editKey, setEditKey] = useState<number>(0);
+    const [editKey, setEditKey] = useState<string>("");
     const navigate = useNavigate();
+    const { taskId } = useParams();
 
     useEffect(() => {
         fetch(`${server}/api/tasks`)
             .then(res => res.json())
-            .then(data => setTasks(data))
+            .then(data => {
+                setTasks(data);
+            })
             .catch(err => console.error(err));
+
     }, []);
+
+    useEffect(() => {
+        if(taskId && tasks.length > 0){
+            editTask(taskId);
+        }
+    }, [taskId, tasks]);
 
     function submitForm(e: React.FormEvent<HTMLFormElement>): void{
         e.preventDefault();
 
-        if(editKey !== 0){
+        if(editKey !== ""){
             fetch(`${server}/api/tasks/${editKey}`,{
                 method: "PUT",
                 headers: {"Content-Type": "application/json"},
@@ -111,14 +121,15 @@ function Home(): React.ReactElement{
     }
 
     function resetFormState(){
+        navigate('/');taskId
         setCurrentMode(HeaderModes.Normal);
         setSubmitMode(SubmitModes.Normal);
         setTitle("");
         setContent("");
-        setEditKey(0);
+        setEditKey("");
     }
 
-    function editTask(key: number): void{
+    function editTask(key: string): void{
         setCurrentMode(HeaderModes.Edit);
         setSubmitMode(SubmitModes.Edit);
 
@@ -129,7 +140,7 @@ function Home(): React.ReactElement{
         setContent(task.content);
     }
 
-    function handleDelete(key: number): void{
+    function handleDelete(key: string): void{
         fetch(`${server}/api/tasks/${key}`, {
             method: "DELETE",
         })
@@ -137,24 +148,25 @@ function Home(): React.ReactElement{
     }
 
     const task = tasks.length > 0 ? (
-    <ol>
-        {tasks.map((task)=>{
+    <ol className={styles.ol}>
+        {tasks.slice(0, 3).map((task)=>{
             return (
-                <li key={task._id}>
-                    <p>{task.title}</p>
+                <li key={task._id} className={styles.list}>
+                    <p className={styles.item}>{task.title}</p>
                     <button onClick={()=>navigate(`/tasks/${task._id}`)}>Open</button>
                     <button onClick={()=>editTask(task._id)}>Edit</button>
                     <button onClick={()=>handleDelete(task._id)}>Delete</button>
                 </li>
             );
         })}
+        {tasks.length > 3 ? (<p className={styles.item}>...</p>) : (<p></p>)}
     </ol>
     ) : (
         <p>No Task Yet</p>
     );
 
     return (
-        <>
+        <div className={styles.main}>
             <Mode mode={currentMode}/>
             <Form
                 title={title}
@@ -166,8 +178,9 @@ function Home(): React.ReactElement{
                 submitMode={submitMode}
                 onCancel={resetFormState}
             />
+            <button onClick={() => navigate("/tasks")}>View All Tasks</button>
             {task}
-        </>
+        </div>
     );
 }
 

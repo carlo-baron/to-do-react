@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router';
+import homeStyles from '../assets/Home.module.css'
 
 const server: string = "http://localhost:5000";
 
@@ -21,13 +22,13 @@ export default function Tasks(){
     }, []);
 
     const task = tasks.length > 0 ? (
-    <ol>
+    <ol className={homeStyles.ol}>
         {tasks.map((task)=>{
             return (
-                <li key={task._id}>
-                    <p>{task.title}</p>
-                    <button onClick={()=>navigate("/")}>Open</button>
-                    <button onClick={()=>navigate("/")}>Edit</button>
+                <li className={homeStyles.list} key={task._id}>
+                    <p className={homeStyles.item}>{task.title}</p>
+                    <button onClick={()=>navigate(`/tasks/${task._id}`)}>Open</button>
+                    <button onClick={()=>navigate(`/edit/${task._id}`)}>Edit</button>
                     <button onClick={()=>navigate("/")}>Delete</button>
                 </li>
             );

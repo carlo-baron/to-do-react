@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router';
 import homeStyles from '../assets/Home.module.css'
+import { TaskList } from './Home';
 
 const server: string = "http://localhost:5000";
 
@@ -21,25 +22,27 @@ export default function Tasks(){
             .catch(err => console.error(err));
     }, []);
 
-    const task = tasks.length > 0 ? (
-    <ol className={homeStyles.ol}>
-        {tasks.map((task)=>{
-            return (
-                <li className={homeStyles.list} key={task._id}>
-                    <p className={homeStyles.item}>{task.title}</p>
-                    <button onClick={()=>navigate(`/tasks/${task._id}`)}>Open</button>
-                    <button onClick={()=>navigate(`/edit/${task._id}`)}>Edit</button>
-                    <button onClick={()=>navigate("/")}>Delete</button>
-                </li>
-            );
-        })}
-    </ol>
-    ) : (
-        <p>No Task Yet</p>
-    );
+    function onEdit(key: string){
+        navigate(`/edit/${key}`);
+    }
+
+    function onDelete(key: string){
+        fetch(`${server}/api/tasks/${key}`, {
+            method: 'DELETE'
+        }).then(() =>
+            setTasks((prev) => prev.filter((task) => task._id !== key))
+        );
+    }
+
     return (
         <div>
-            {task}
+            <TaskList
+                tasks={tasks}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                navigate={navigate}
+                limit={tasks.length}
+            />
         </div>
     ); 
 }

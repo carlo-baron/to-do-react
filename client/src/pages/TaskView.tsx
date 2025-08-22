@@ -1,5 +1,6 @@
 import { useParams } from 'react-router'
 import { useEffect, useState } from 'react'
+import styles from '../assets/Home.module.css'
 
 const server: string = "http://localhost:5000";
 
@@ -24,8 +25,8 @@ export default function TaskView(){
 
     return (
         <>
-            <h1>{task.title}</h1>
-            <p>{task.content}</p>
+            <h1 className={styles.header}>{task.title}</h1>
+            <p className={styles.item} >{task.content}</p>
         </>
     ); 
 }
